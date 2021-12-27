@@ -1,8 +1,8 @@
 const nodemailer = require("nodemailer");
 require('dotenv').config()
 
-module.exports = function email(email, titulo, msg){
-    return new Promise((resolve, reject)=>{
+module.exports = function email(email, titulo, msg) {
+    return new Promise((resolve, reject) => {
         const user = process.env.EMAIL;
         const pass = process.env.SENHA;
 
@@ -19,13 +19,13 @@ module.exports = function email(email, titulo, msg){
             subject: titulo,
             text: msg
         })
-        .then((res)=>{
-            //console.log(res);
-            resolve(res);
-        })
-        .catch((err)=>{
-            //console.log(err);
-            reject(err);
-        })
+            .then((res) => {
+                //console.log(res);
+                resolve(res);
+            })
+            .catch((err) => {
+                //console.log(err);
+                reject(err);
+            })
     });
 }

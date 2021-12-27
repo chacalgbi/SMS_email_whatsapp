@@ -27,64 +27,127 @@ https://bityli.com/MicksPlano
 
 var msg_sms = "Caro cliente, conforme previsto no termo de servico a partir de 01/2022 seu plano sofrera reajuste. A Micks esta a disposicao. WhatsApp: (77)98802-3452.";
 
-function formatar_celular(num){
-  let formatado = num.replace(/\D+/g, "");
-  let final = '';
-  if(formatado.length == 11){
-      final = formatado.replace(/(\d{2})?(\d{5})?(\d{4})/, "($1) $2-$3");
-  }else if(formatado.length == 10){
-      final = formatado.replace(/(\d{2})?(\d{4})?(\d{4})/, "($1) 9$2-$3");
-  }else if(formatado.length ==  9){
-      final = formatado.replace(/(\d{5})?(\d{4})/, "(77) $1-$2");
-  }else if(formatado.length ==  8){
-      final = formatado.replace(/(\d{4})?(\d{4})/, "(77) 9$1-$2");
-  }else{
-      final = "erro";
-  }
-  let final1 = final.replace(/\D+/g, "");
-  return final1;
+function formatar_celular(num) {
+	let formatado = num.replace(/\D+/g, "");
+	let final = '';
+	if(formatado.indexOf("345") != -1){
+		final = "erro";
+	} else if (formatado.length == 11) {
+		final = formatado.replace(/(\d{2})?(\d{5})?(\d{4})/, "($1) $2-$3");
+	} else if (formatado.length == 10) {
+		final = formatado.replace(/(\d{2})?(\d{4})?(\d{4})/, "($1) 9$2-$3");
+	} else if (formatado.length == 9) {
+		final = formatado.replace(/(\d{5})?(\d{4})/, "(77) $1-$2");
+	} else if (formatado.length == 8) {
+		final = formatado.replace(/(\d{4})?(\d{4})/, "(77) 9$1-$2");
+	} else {
+		final = "erro";
+	}
+	let final1 = final.replace(/\D+/g, "");
+	return final1;
 }
 
-async function cobrar(){
+function verificar_email(email){
+	if(email.indexOf("@") === -1){
+		return "";
+	}else if(email.indexOf(" ") != -1){
+		return "";
+	}else if(email.indexOf("naotem") != -1){
+		return "";
+	}else if(email.length < 11){
+		return "";
+	}else{
+		return email;
+	}
+}
 
-  await ler_csv('teste.csv').then((res)=>{ array_clientes = res; })
+function delay(){
+    return new Promise((resolve, reject)=>{
+        setTimeout(()=>{ resolve("OK"); }, 10);
+    });
+}
 
-  log(`${array_clientes.length} Clientes encontrados`, 'alerta');
+async function cobrar() {
 
-  for (const [index, cliente] of array_clientes.entries()) {
+	await ler_csv('rurais.csv').then((res) => { array_clientes = res; })
 
-    console.log(`Enviando para: ${cliente.CLIENTE}`);
+	log(`${array_clientes.length} Clientes encontrados`, 'alerta');
 
-    let cel = formatar_celular(cliente.CELULAR);
-    let frase_log = `${dataHora()}Cliente: ${cliente.CODIGO} - `;
+	for (const [index, cliente] of array_clientes.entries()) {
 
-    await email(cliente.E_MAIL, titulo_email, corpo).then((res)=>{
-      frase_log += "Email: OK - ";
-    }).catch((err)=>{ console.log(err); frase_log += "Email: ERRO - "; });
+		let frase_log = `${cliente.CLIENTE.substring(18, 0)} - `;
+		log(`${index}/${array_clientes.length} Enviando para: ${cliente.CLIENTE}`, "info");
 
-    await whatsapp(cel, corpo).then((res)=>{
-      if(res.error === 'sim'){
-        frase_log += "WhatsApp: ERRO - ";
-      }else{
-        frase_log += "WhatsApp: OK - ";
-      }
-    }).catch((err)=>{ console.log(err); frase_log += "WhatsApp: ERRO - "; });
+		let cel = formatar_celular(cliente.CELULAR);
+		let tel = formatar_celular(cliente.TELEFONE);
+		let email = verificar_email(cliente.E_MAIL);
 
-    await sms(cel, msg_sms).then((res)=>{
-      if(res == 'OK - SMS Enviado'){
-        frase_log += "SMS: OK";
-      }else{
-        frase_log += "SMS: ERRO";
-      }
-    }).catch((err)=>{ console.log(err); frase_log += "SMS: ERRO"; });
+		cel === tel ? tel = "" : tel; // Se os dois campos forem iguais, inutiliza o de TELEFONE
 
-    frase_log += "\n";
-    logger.write(frase_log);
+		cel === "" ? cel = "  NAO_TEM  " : cel;
+		tel === "" ? tel = "  NAO_TEM  " : tel;
+		email === "" ? email = "  NAO_TEM  " : email;
 
-  }
+		frase_log += `${cel} - ${tel} - ${email}`;
+		
+		frase_log += "\n";
+		logger.write(frase_log);
 
-  logger.end();
+		await delay();
+	}
+
+	logger.end();
 
 }
 
 cobrar();
+
+
+
+
+/*		
+
+		if (cel.length === 11) {
+			await whatsapp(cel, corpo).then((res) => {
+				if (res.error === 'sim') {
+					frase_log += "WhatsApp1: ERRO - ";
+				} else {
+					frase_log += "WhatsApp1: OK - ";
+				}
+			}).catch((err) => { console.log(err); frase_log += "WhatsApp1: ERRO - "; });
+	
+			await sms(cel, msg_sms).then((res) => {
+				if (res == 'OK - SMS Enviado') {
+					frase_log += "SMS1: OK - ";
+				} else {
+					frase_log += "SMS1: ERRO - ";
+				}
+			}).catch((err) => { console.log(err); frase_log += "SMS1: ERRO - "; });
+
+		}else{frase_log += "WhatsApp1: ERRO - SMS1: ERRO - ";}
+
+		if (tel.length === 11) {
+			await whatsapp(tel, corpo).then((res) => {
+				if (res.error === 'sim') {
+					frase_log += "WhatsApp2: ERRO - ";
+				} else {
+					frase_log += "WhatsApp2: OK - ";
+				}
+			}).catch((err) => { console.log(err); frase_log += "WhatsApp2: ERRO - "; });
+	
+			await sms(tel, msg_sms).then((res) => {
+				if (res == 'OK - SMS Enviado') {
+					frase_log += "SMS2: OK - ";
+				} else {
+					frase_log += "SMS2: ERRO - ";
+				}
+			}).catch((err) => { console.log(err); frase_log += "SMS2: ERRO - "; });
+
+		}else{frase_log += "WhatsApp2: ERRO - SMS2: ERRO - ";}
+
+		if(email.length > 10){
+			await email(cliente.E_MAIL, titulo_email, corpo).then((res) => {
+				frase_log += "Email: OK";
+			}).catch((err) => { console.log(err); frase_log += "Email: ERRO"; });
+		}else{frase_log += "Email: ERRO";}
+*/
