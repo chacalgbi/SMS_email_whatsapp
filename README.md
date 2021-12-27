@@ -5,9 +5,13 @@ O script extrai de um arquivo .csv o email e número dos clientes para aviso aut
 Após o envio o arquivo log.txt mostrará o log completo do que foi enviado e seu status.
 
 Ex:
+
 Sex 24/12/2021 11:5:47.518ms - Cliente: 8839 - Email: OK - WhatsApp: OK - SMS: OK
+
 Sex 24/12/2021 11:5:59.95ms - Cliente: 10328 - Email: OK - WhatsApp: OK - SMS: OK
+
 Sex 24/12/2021 11:6:10.708ms - Cliente: 7194 - Email: OK - WhatsApp: OK - SMS: OK
+
 Sex 24/12/2021 11:6:21.628ms - Cliente: 1234 - Email: OK - WhatsApp: OK - SMS: OK
 
  - O envio de email usa o nodemailer (biblioteca NodeJs)
